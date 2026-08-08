@@ -895,32 +895,32 @@ yapeNumber: '934348032',
         </div>
     </header>
 
-    <!-- HERO BANNER OSCURO ESTILO PARRILLEROS -->
+    <!-- HERO BANNER (TEXTO 100% VISIBLE Y LEGIBLE) -->
     <div class="max-w-6xl mx-auto px-4 mt-6">
-        <div class="relative bg-gradient-to-r from-[#1E1B18] via-[#2A2421] to-[#1A1614] rounded-3xl p-6 md:p-10 border border-dj-amber/30 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl text-dj-textMain">
+        <div class="relative bg-gradient-to-r from-[#1C1614] via-[#28201C] to-[#171210] rounded-3xl p-6 md:p-10 border border-[#D9531E]/40 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
             <div class="space-y-4 text-center md:text-left z-10 max-w-xl">
-                <span class="bg-dj-amber/10 text-dj-amber border border-dj-amber/30 text-[10px] font-extrabold uppercase tracking-widest px-3.5 py-1 rounded-full backdrop-blur-xs inline-flex items-center gap-1.5">
-                    <i class="fa-solid fa-fire text-dj-amber"></i> PARRILLAS AL CARBÓN & CEVICHES FRESCOS
+                <span class="bg-[#D9531E]/20 text-[#FF9371] border border-[#D9531E]/40 text-[10px] font-extrabold uppercase tracking-widest px-3.5 py-1 rounded-full backdrop-blur-xs inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-fire text-[#D9531E]"></i> PARRILLAS AL CARBÓN & CEVICHES FRESCOS
                 </span>
                 <h2 class="font-display font-bold text-3xl md:text-5xl leading-tight text-white drop-shadow-md">
-                    Anticuchos al carbón. <br class="hidden md:inline"> <span class="text-dj-amber">Ceviche norteño fresco.</span>
+                    Anticuchos al carbón. <br class="hidden md:inline"> <span class="text-[#FF6B35]">Ceviche norteño fresco.</span>
                 </h2>
-                <p class="text-xs md:text-sm text-dj-textMuted leading-relaxed font-normal">
+                <!-- TEXTO DEL PARRAFO EN CREMA BRILLANTE PARA MAXIMO CONTRASTE -->
+                <p class="text-xs md:text-sm text-[#F0E6DD] leading-relaxed font-medium">
                     La combinación perfecta de la costa piurana. Sabor ahumado auténtico y marinado al instante en nuestras 4 sedes.
                 </p>
                 <div class="pt-2">
-                    <button @click="scrollToMenu('parrillas')" class="px-7 py-3 bg-dj-amber hover:bg-dj-amberDark text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition shadow-lg transform active:scale-95">
+                    <button @click="scrollToMenu('parrillas')" class="px-7 py-3 bg-[#D9531E] hover:bg-[#B33E10] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition shadow-lg transform active:scale-95">
                         Ver Parrillas & Combos
                     </button>
                 </div>
             </div>
 
-              <div class="w-48 h-48 md:w-60 md:h-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-dj-gold/50 transition-all duration-300 transform rotate-1 hover:rotate-0 flex-shrink-0">
-
-<img :src="heroImageUrl" alt="Plato D´JAVY" class="w-full h-full object-cover"></div>
+            <div class="w-48 h-48 md:w-60 md:h-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D9531E]/50 transition-all duration-300 transform rotate-1 hover:rotate-0 flex-shrink-0">
+                <img :src="heroImageUrl" alt="Plato D´JAVY" class="w-full h-full object-cover">
+            </div>
         </div>
     </div>
-
     <!-- CARTA PRINCIPAL -->
     <main class="max-w-6xl mx-auto px-4 py-8 md:py-12">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
