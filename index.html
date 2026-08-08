@@ -54,7 +54,7 @@
     <script>
         window.djavyApp = function() {
             return {
-                // ID DE TU GOOGLE SHEET
+                // CONFIGURACIÓN DE CONEXIÓN CON TU GOOGLE SHEET
                 sheetId: '1MgE7IXICQAt-gsoT6o9znlzgHLmYKF3Sx9d_F0YWd4',
                 isLoadingMenu: false,
 
@@ -162,7 +162,40 @@
                     { id: 'bebidas', name: '🥤 Cervezas & Bebidas' }
                 ],
 
-                products: [],
+                // PRODUCTOS DE RESPALDO (Garantiza respuesta inmediata)
+                products: [
+                    { id: 'duo-criollo', name: 'Dúo Criollo', description: 'Elige 2: Majado de yuca, Costillas de cerdo, Seco de chavelo o Carne seca.', category: 'duos-rondas', price: 55.0, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'duo-marino', name: 'Dúo Marino', description: 'Elige 2: Ceviche, Arroz con mariscos, Chicharrón de pescado o Tiradito.', category: 'duos-rondas', price: 50.0, image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'duo-la-negra', name: 'Dúo La Negra', description: 'Arroz con conchas negras + Ceviche de conchas negras.', category: 'duos-rondas', price: 50.0, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'ronda-marina-djavy', name: 'Ronda Marina D’ Javy', description: 'Ceviche mixto + Arroz con mariscos + Chicharrón de pescado + Pulpo al olivo + Tequeños rellenos con langostinos.', category: 'duos-rondas', price: 85.0, image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'ronda-criolla-djavy', name: 'Ronda Criolla D’ Javy', description: 'Costillas de cerdo + Seco de chavelo + Majado de yuca + Carne seca + Chifles caseros.', category: 'duos-rondas', price: 85.0, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'leche-tigre', name: 'Leche de Tigre', description: 'Concentrado marino lleno de sabor piurano con canchita serrana.', category: 'entradas', price: 23.0, image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'leche-pantera', name: 'Leche de Pantera', description: 'Potente concentrado afrodisíaco preparado con conchas negras frescas.', category: 'entradas', price: 25.0, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'tequenos-10', name: 'Tequeños (10 Unid.)', description: 'Crocantes tequeños dorados rellenos de Queso, Jamón o Langostinos.', category: 'entradas', price: 23.0, image: 'https://images.unsplash.com/photo-1599490659213-e0b7e0dc5ea1?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'patacones-sarsa', name: 'Patacones con sarsa', description: 'Discos crujientes de plátano verde frito acompañados con sarsa criolla.', category: 'entradas', price: 15.0, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'chifles-caseros-sarsa', name: 'Chifles caseros con sarsa', description: 'Chifles piuranos artesanales super crocantes acompañados con sarsa criolla.', category: 'entradas', price: 15.0, image: 'https://images.unsplash.com/photo-1599490659213-e0b7e0dc5ea1?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'ceviche-filete', name: 'Ceviche de Filete', description: 'Filete de pescado fresco en zumo de limón, camote, choclo y canchita.', category: 'marino', price: 35.0, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'ceviche-caballa', name: 'Ceviche de Caballa', description: 'Caballa fresca macerada en limón con sarandaja norteña.', category: 'marino', price: 35.0, image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'ceviche-conchas-negras', name: 'Ceviche de Conchas Negras', description: 'Conchas negras piuranas en su propio jugo con limón y culantro.', category: 'marino', price: 38.0, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'ceviche-mixto', name: 'Ceviche Mixto', description: 'Calamar, caracol, langostino y pulpo marinado al momento.', category: 'marino', price: 48.0, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'arroz-mariscos', name: 'Arroz con Mariscos', description: 'Arroz graneado en ají amarillo con mixtura de mariscos.', category: 'marino', price: 38.0, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'chicharron-pollo-2', name: 'Chicharrón de Pollo (Para 2)', description: 'Trozos de pollo crocantes marinados en especias con papas doradas.', category: 'chicharrones', price: 41.0, image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'chicharron-pescado-2', name: 'Chicharrón de Pescado (Para 2)', description: 'Trozos de filete de pescado fritos al panko crocante con yucas.', category: 'chicharrones', price: 41.0, image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'costillas-patacones-2', name: 'Costillas de Cerdo con Patacones (Para 2)', description: 'Costillar de cerdo dorado al punto con crocantes patacones.', category: 'criollos', price: 48.0, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'seco-chavelo', name: 'Seco de Chavelo', description: 'Plátano verde majado y frito con cecina/carne seca sofrita con ají.', category: 'criollos', price: 47.0, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'majado-yuca', name: 'Majado de Yuca', description: 'Yuca piurana majada en chicha y ají amarillo con chicharrón.', category: 'criollos', price: 46.0, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'carne-seca', name: 'Carne Seca', description: 'Tradicional carne seca piurana acompañada con chifles caseros.', category: 'criollos', price: 46.0, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'mollejitas-p2', name: 'Mollejitas (Para 2)', description: 'Porción doble de mollejitas asadas al carbón con ensalada y papas.', category: 'parrillas', price: 36.0, image: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'anticuchos-brochetas', name: 'Anticuchos ó Brochetas', description: 'Brochetas de corazón de res o carne a la parrilla con chimichurri.', category: 'parrillas', price: 18.0, image: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'combo-super', name: 'Combo Súper Parrillero', description: 'Anticucho + Chuleta + Brocheta + Mollejitas + Chorizo + Papas + Ensalada.', category: 'parrillas', price: 78.0, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'papas-fritas', name: 'Papas Fritas', description: 'Porción de papas amarillas crujientes por fuera y suaves por dentro.', category: 'adicionales', price: 10.0, image: 'https://images.unsplash.com/photo-1599490659213-e0b7e0dc5ea1?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'cerveza-pilsen', name: 'Pilsen Callao', description: 'La cerveza de la amistad personal bien helada.', category: 'bebidas', price: 10.0, image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'chicha-morada-jarra', name: 'Chicha Morada (Jarra)', description: 'Jarra helada de chicha de maíz morado piurana.', category: 'bebidas', price: 17.0, image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=500&q=80' },
+                    { id: 'salsa-aji', name: 'Ají de la Casa', description: 'Ají picante estilo norteño.', category: 'cremas', price: 0.0, image: '' },
+                    { id: 'salsa-criolla', name: 'Salsa Criolla', description: 'Cebolla criolla fresca en corte fino.', category: 'cremas', price: 0.0, image: '' },
+                    { id: 'salsa-golf', name: 'Salsa Golf', description: 'Clásica salsa golf de la casa.', category: 'cremas', price: 0.0, image: '' },
+                    { id: 'salsa-rocoto', name: 'Rocoto Molido', description: 'Rocoto molido bien picante.', category: 'cremas', price: 0.0, image: '' }
+                ],
 
                 initData() {
                     const savedData = localStorage.getItem('djavy_saved_profile');
@@ -214,43 +247,38 @@
                     }
                 },
 
-                // LECTOR DE GOOGLE SHEETS USANDO API GVIZ CON SOPORTE CORS NATIVO
+                // LECTOR DE GOOGLE SHEETS EN FORMATO TSV
                 async fetchSheetData() {
                     if (!this.sheetId) return;
                     this.isLoadingMenu = true;
 
                     try {
-                        let baseUrl = `https://docs.google.com/spreadsheets/d/${this.sheetId}/gviz/tq?tqx=out:csv`;
-                        if (this.sheetId.startsWith('2PACX-')) {
-                            baseUrl = `https://docs.google.com/spreadsheets/d/e/${this.sheetId}/pub?output=csv`;
-                        }
-
                         // 1. Cargar Productos
-                        const prodRes = await fetch(`${baseUrl}&sheet=Productos`);
+                        const prodRes = await fetch(`https://docs.google.com/spreadsheets/d/${this.sheetId}/export?format=tsv&sheet=Productos`);
                         if (prodRes.ok) {
-                            const csvText = await prodRes.text();
-                            const fetchedProds = this.parseCSVProds(csvText);
+                            const text = await prodRes.text();
+                            const fetchedProds = this.parseTSVProducts(text);
                             if (fetchedProds.length > 0) this.products = fetchedProds;
                         }
 
                         // 2. Cargar Sedes
                         try {
-                            const sedesRes = await fetch(`${baseUrl}&sheet=Sedes`);
+                            const sedesRes = await fetch(`https://docs.google.com/spreadsheets/d/${this.sheetId}/export?format=tsv&sheet=Sedes`);
                             if (sedesRes.ok) {
                                 const sedesText = await sedesRes.text();
-                                const fetchedSedes = this.parseCSVSedes(sedesText);
+                                const fetchedSedes = this.parseTSVSedes(sedesText);
                                 if (fetchedSedes.length > 0) this.sedes = fetchedSedes;
                             }
-                        } catch(eSedes) {}
+                        } catch(errSedes) {}
 
                         // 3. Cargar Configuración
                         try {
-                            const configRes = await fetch(`${baseUrl}&sheet=Configuracion`);
+                            const configRes = await fetch(`https://docs.google.com/spreadsheets/d/${this.sheetId}/export?format=tsv&sheet=Configuracion`);
                             if (configRes.ok) {
                                 const configText = await configRes.text();
-                                this.parseCSVConfig(configText);
+                                this.parseTSVConfig(configText);
                             }
-                        } catch(eConfig) {}
+                        } catch(errConfig) {}
 
                     } catch (e) {
                         console.error("Error al sincronizar con Google Sheets:", e);
@@ -259,46 +287,28 @@
                     }
                 },
 
-                parseCSVLine(line) {
-                    const result = [];
-                    let cell = '';
-                    let inQuotes = false;
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if ((char === ',' || char === '\t') && !inQuotes) {
-                            result.push(cell.trim().replace(/^"|"$/g, ''));
-                            cell = '';
-                        } else {
-                            cell += char;
-                        }
-                    }
-                    result.push(cell.trim().replace(/^"|"$/g, ''));
-                    return result;
-                },
-
-                parseCSVProds(csvText) {
-                    const lines = csvText.split(/\r?\n/);
+                parseTSVProducts(text) {
+                    const lines = text.split(/\r?\n/);
                     if (lines.length < 2) return [];
 
-                    const headers = this.parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+                    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase().replace(/["\r\n]/g, ''));
                     const fetchedProds = [];
 
                     for (let i = 1; i < lines.length; i++) {
-                        if (!lines[i].trim()) continue;
+                        const line = lines[i].trim();
+                        if (!line) continue;
 
-                        const cols = this.parseCSVLine(lines[i]);
+                        const cols = lines[i].split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
                         const item = {};
                         headers.forEach((h, idx) => { item[h] = cols[idx] || ''; });
 
-                        const estado = (item.estado || 'disponible').toLowerCase().trim();
+                        const estado = (item.estado || 'disponible').toLowerCase();
                         if (item.nombre && item.categoria && estado === 'disponible') {
                             fetchedProds.push({
                                 id: item.id || `prod-${i}`,
                                 name: item.nombre,
                                 description: item.descripcion || '',
-                                category: item.categoria.toLowerCase().trim(),
+                                category: item.categoria.toLowerCase(),
                                 price: parseFloat(item.precio) || 0,
                                 image: item.imagen_url || 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80'
                             });
@@ -307,21 +317,22 @@
                     return fetchedProds;
                 },
 
-                parseCSVSedes(csvText) {
-                    const lines = csvText.split(/\r?\n/);
+                parseTSVSedes(text) {
+                    const lines = text.split(/\r?\n/);
                     if (lines.length < 2) return [];
 
-                    const headers = this.parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+                    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase().replace(/["\r\n]/g, ''));
                     const fetchedSedes = [];
 
                     for (let i = 1; i < lines.length; i++) {
-                        if (!lines[i].trim()) continue;
+                        const line = lines[i].trim();
+                        if (!line) continue;
 
-                        const cols = this.parseCSVLine(lines[i]);
+                        const cols = lines[i].split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
                         const item = {};
                         headers.forEach((h, idx) => { item[h] = cols[idx] || ''; });
 
-                        const estado = (item.estado || 'activo').toLowerCase().trim();
+                        const estado = (item.estado || 'activo').toLowerCase();
                         if (item.nombre && estado === 'activo') {
                             fetchedSedes.push({
                                 id: item.id || `sede-${i}`,
@@ -337,16 +348,17 @@
                     return fetchedSedes;
                 },
 
-                parseCSVConfig(csvText) {
-                    const lines = csvText.split(/\r?\n/);
+                parseTSVConfig(text) {
+                    const lines = text.split(/\r?\n/);
                     if (lines.length < 2) return;
 
-                    const headers = this.parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+                    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase().replace(/["\r\n]/g, ''));
 
                     for (let i = 1; i < lines.length; i++) {
-                        if (!lines[i].trim()) continue;
+                        const line = lines[i].trim();
+                        if (!line) continue;
 
-                        const cols = this.parseCSVLine(lines[i]);
+                        const cols = lines[i].split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
                         const item = {};
                         headers.forEach((h, idx) => { item[h] = cols[idx] || ''; });
 
