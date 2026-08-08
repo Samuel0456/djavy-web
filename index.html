@@ -833,27 +833,27 @@ yapeNumber: '934348032',
       :class="isCartOpen || isDetailOpen ? 'overflow-hidden h-screen' : ''"
       x-init="initData()">
 
-    <!-- BARRA SUPERIOR CON ESTADO EN TIEMPO REAL -->
-    <div class="bg-[#0A0808] text-dj-textMuted py-2 px-4 text-xs border-b border-dj-line">
+    <!-- BARRA SUPERIOR (CORREGIDA Y 100% VISIBLE) -->
+    <div class="bg-[#1C1614] text-[#E2D7CB] py-2 px-4 text-xs border-b border-[#D9531E]/30">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-xs"
-                      :class="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : (isCurrentSedeOpen() ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40')">
+                      :class="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (isCurrentSedeOpen() ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40')">
                     <span class="w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse"
                           :class="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'bg-amber-400' : (isCurrentSedeOpen() ? 'bg-emerald-400' : 'bg-rose-400')"></span>
                     <span x-text="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'Modo Pruebas / Promo Activo' : (isCurrentSedeOpen() ? 'Sede Abierta en Piura' : 'Sede Cerrada actualmente')"></span>
                 </span>
-                <span class="font-medium text-[11px] text-dj-textMuted">
-                    <i class="fa-solid fa-fire text-dj-amber mr-1"></i>
-                    <strong class="text-dj-textMain">4 Sedes Parrilleras:</strong> Puente Rojo • San José • Av. Progreso • Country Club
+                <span class="font-medium text-[11px] text-[#E2D7CB]">
+                    <i class="fa-solid fa-fire text-[#D9531E] mr-1"></i>
+                    <strong class="text-white">4 Sedes Parrilleras:</strong> Puente Rojo • San José • Av. Progreso • Country Club
                 </span>
             </div>
-            <div class="flex items-center gap-3 font-medium text-[11px] text-dj-textMuted">
-                <span><i class="fa-solid fa-motorcycle text-dj-amber mr-1"></i> Delivery estimado: <span x-text="deliveryTimeEstimate" class="text-dj-textMain font-semibold"></span></span>
+            <div class="flex items-center gap-3 font-medium text-[11px] text-[#E2D7CB]">
+                <span><i class="fa-solid fa-motorcycle text-[#D9531E] mr-1"></i> Delivery estimado: <span x-text="deliveryTimeEstimate" class="text-white font-semibold"></span></span>
             </div>
         </div>
     </div>
-
+    
     <!-- HEADER PRINCIPAL ESTILO PARRILLA OSCURA -->
     <header class="bg-dj-bg/95 border-b border-dj-line py-3.5 px-4 sticky top-0 z-40 backdrop-blur-md shadow-lg">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
