@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D´JAVY — Cevichería & Anticuchería Premium | Pide por WhatsApp</title>
+    <title>D´JAVY — Cevichería & Parrillas al Carbón</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,14 +26,16 @@
                 extend: {
                     colors: {
                         dj: {
-                            teal: '#0A4B46',       // Verde marino elegante principal
-                            tealDark: '#05312E',
-                            gold: '#C5A059',       // Dorado elegante
-                            goldLight: '#F3E9CD',
-                            charcoal: '#1C1917',   // Carbón pulido
-                            sand: '#FAF7F2',       // Fondo cálido premium
-                            card: '#FFFFFF',
-                            line: '#E8E1D7'
+                            bg: '#121010',         // Carbón profundo de fondo
+                            card: '#1C1917',       // Tarjeta ahumada
+                            cardHover: '#262322',
+                            amber: '#F59E0B',      // Fuego / Brasa ámbar
+                            amberDark: '#D97706',
+                            gold: '#C5A059',
+                            teal: '#0E5C56',       // Verde de contraste de marca
+                            line: '#2E2A28',       // Borde sutil oscuro
+                            textMain: '#F3F4F6',   // Texto claro
+                            textMuted: '#A1A1AA'
                         }
                     },
                     fontFamily: {
@@ -49,7 +51,7 @@
         html { scroll-behavior: smooth; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .leaflet-container { z-index: 10 !important; }
+        .leaflet-container { z-index: 10 !important; filter: invert(90%) hue-rotate(180deg) brightness(95%) contrast(90%); }
     </style>
 
     <script>
@@ -71,9 +73,8 @@
                 // System for saving customer data
                 saveUserData: false,
 
-                // Store open status
+                // Mode and Schedules
                 activeSchedule: 'NORMAL',
-                isOpen: true,
 
                 // Product details modal
                 isDetailOpen: false,
@@ -104,12 +105,12 @@
 
                 // Brand details
                 logoUrl: 'https://i.postimg.cc/fbyGFkW3/844ea0ac-03e3-4316-9e21-2e16df6c9387.jpg',
-                heroImageUrl: 'https://i.postimg.cc/SQctscJN/images-(1).jpg',
+                heroImageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxTirOcIF5SOK2Ld8x7faszxDd-pZjE06ILT5i5aCwkjyzw0HwdhpUBM4&s=10',
                 yapeNumber: '934348032',
                 yapeOwner: 'D´JAVY Piura',
                 deliveryTimeEstimate: '30–50 min (fines de semana varía)',
 
-                // Sedes de atención oficiales
+                // Sedes de atención oficiales con horarios
                 sedes: [
                     {
                         id: 'puente-rojo',
@@ -118,7 +119,9 @@
                         phone: '51934348032',
                         lat: -5.190920,
                         lng: -80.624979,
-                        scheduleText: 'Lun a Dom: 10:30 a.m. - 12:30 a.m.'
+                        scheduleText: 'Lun a Dom: 10:30 a.m. - 12:30 a.m.',
+                        horaInicio: '10:30',
+                        horaFin: '00:30'
                     },
                     {
                         id: 'san-jose',
@@ -127,7 +130,9 @@
                         phone: '51981083311',
                         lat: -5.189767,
                         lng: -80.648418,
-                        scheduleText: 'L-V: 5:30 p.m. - 12:30 a.m. | S-D: 10:30 a.m. - 12:30 a.m.'
+                        scheduleText: 'L-V: 5:30 p.m. - 12:30 a.m. | S-D: 10:30 a.m. - 12:30 a.m.',
+                        horaInicio: '10:30',
+                        horaFin: '00:30'
                     },
                     {
                         id: 'progreso',
@@ -136,7 +141,9 @@
                         phone: '51906903444',
                         lat: -5.214637,
                         lng: -80.623184,
-                        scheduleText: 'L-V: 5:30 p.m. - 12:30 a.m. | S-D: 10:30 a.m. - 12:30 a.m.'
+                        scheduleText: 'L-V: 5:30 p.m. - 12:30 a.m. | S-D: 10:30 a.m. - 12:30 a.m.',
+                        horaInicio: '10:30',
+                        horaFin: '00:30'
                     },
                     {
                         id: 'country',
@@ -145,7 +152,9 @@
                         phone: '51903103226',
                         lat: -5.171333,
                         lng: -80.610078,
-                        scheduleText: 'L-V: 5:30 p.m. - 12:30 a.m. | S-D: 10:30 a.m. - 12:30 a.m.'
+                        scheduleText: 'L-V: 5:30 p.m. - 12:30 a.m. | S-D: 10:30 a.m. - 12:30 a.m.',
+                        horaInicio: '10:30',
+                        horaFin: '00:30'
                     }
                 ],
 
@@ -199,8 +208,6 @@
                     }
 
                     this.fetchSheetData();
-                    this.updateOpenStatus();
-                    setInterval(() => { this.updateOpenStatus(); }, 30000);
 
                     // Observadores de auto-guardado
                     this.$watch('saveUserData', () => this.saveProfileToLocalStorage());
@@ -230,7 +237,41 @@
                     }
                 },
 
-                // LECTOR DE GOOGLE SHEETS
+                // LÓGICA DE HORARIOS Y MODO PRUEBAS / PROMOCIÓN
+                isSedeOpen(sede) {
+                    const activeUpper = (this.activeSchedule || '').toUpperCase().trim();
+                    if (['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes(activeUpper)) {
+                        return true; // MODO PRUEBAS / PROMO ACTIVADO
+                    }
+
+                    if (!sede || !sede.horaInicio || !sede.horaFin) return true;
+
+                    const now = new Date();
+                    const peruTimeStr = now.toLocaleString("en-US", { timeZone: "America/Lima" });
+                    const peruDate = new Date(peruTimeStr);
+                    const currentMinutes = peruDate.getHours() * 60 + peruDate.getMinutes();
+
+                    const parseMins = (tStr) => {
+                        if (!tStr) return 0;
+                        const parts = tStr.trim().split(':');
+                        return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
+                    };
+
+                    const startMins = parseMins(sede.horaInicio);
+                    const endMins = parseMins(sede.horaFin);
+
+                    if (endMins < startMins) { // Cruza medianoche (Ej: 10:30 a 00:30)
+                        return currentMinutes >= startMins || currentMinutes < endMins;
+                    } else {
+                        return currentMinutes >= startMins && currentMinutes < endMins;
+                    }
+                },
+
+                isCurrentSedeOpen() {
+                    return this.isSedeOpen(this.getSelectedSede());
+                },
+
+                // LECTOR DE GOOGLE SHEETS (SILENCIOSO EN SEGUNDO PLANO)
                 async fetchSheetData() {
                     if (!this.sheetId) return;
                     this.isLoadingMenu = true;
@@ -324,7 +365,9 @@
                                 phone: item.telefono || '',
                                 lat: parseFloat(item.latitud) || 0,
                                 lng: parseFloat(item.longitud) || 0,
-                                scheduleText: item.horario_texto || ''
+                                scheduleText: item.horario_texto || '',
+                                horaInicio: item.hora_inicio || item.horainicio || '10:30',
+                                horaFin: item.hora_fin || item.horafin || '00:30'
                             });
                         }
                     }
@@ -374,10 +417,6 @@
                             }
                         }
                     }
-                },
-
-                updateOpenStatus() {
-                    this.isOpen = true;
                 },
 
                 calculateDistance(lat1, lon1, lat2, lon2) {
@@ -617,6 +656,11 @@
                 },
 
                 goToCheckout() {
+                    const sede = this.getSelectedSede();
+                    if (!this.isSedeOpen(sede)) {
+                        this.errorMessage = `La sede ${sede.name} se encuentra fuera de su horario de atención.`;
+                        return;
+                    }
                     this.currentStep = 'checkout';
                     this.initMap();
                 },
@@ -651,7 +695,7 @@
                         }).addTo(this.map);
 
                         const pinIcon = L.divIcon({
-                            html: `<i class="fa-solid fa-location-dot text-dj-teal text-3xl drop-shadow-md"></i>`,
+                            html: `<i class="fa-solid fa-location-dot text-dj-amber text-3xl drop-shadow-md"></i>`,
                             iconSize: [30, 30],
                             iconAnchor: [15, 30],
                             className: 'bg-transparent border-none'
@@ -692,9 +736,15 @@
                     }, 3500);
                 },
 
+                // FORMATO DE WHATSAPP MEJORADO, LIMPIO Y ORDENADO
                 sendToWhatsApp() {
                     this.errorMessage = '';
                     const sede = this.getSelectedSede();
+
+                    if (!this.isSedeOpen(sede)) {
+                        this.errorMessage = `La sede ${sede.name} se encuentra cerrada en este momento.`;
+                        return;
+                    }
 
                     if (!this.checkoutName.trim()) {
                         this.errorMessage = "Por favor, ingresa tu Nombre completo.";
@@ -720,42 +770,56 @@
                     }
 
                     const businessPhone = sede.phone;
-                    let msg = `🐟 *NUEVO PEDIDO - D´JAVY* 🔥\n\n`;
-                    msg += `🏬 *Sede Asignada:* ${sede.name}\n`;
-                    msg += `📍 *Dirección Sede:* ${sede.address}\n`;
-                    msg += `👤 *Cliente:* ${this.checkoutName.trim()}\n`;
-                    msg += `📞 *Celular:* ${this.checkoutPhone.trim()}\n`;
-                    msg += `🛵 *Tipo de Entrega:* ${this.checkoutDeliveryType === 'delivery' ? 'Delivery' : 'Recojo en Local'}\n`;
+                    const divider = "━━━━━━━━━━━━━━━━━━━━━━━";
+
+                    let msg = `🔥 *NUEVO PEDIDO — D´JAVY* 🔥\n${divider}\n\n`;
+                    msg += `🏬 *SEDE DE ATENCIÓN:* ${sede.name.toUpperCase()}\n`;
+                    msg += `📍 *Dirección Sede:* ${sede.address}\n\n`;
+
+                    msg += `👤 *DATOS DEL CLIENTE*\n`;
+                    msg += `• *Nombre:* ${this.checkoutName.trim()}\n`;
+                    msg += `• *Celular:* ${this.checkoutPhone.trim()}\n`;
+                    msg += `• *Modalidad:* ${this.checkoutDeliveryType === 'delivery' ? '🛵 Delivery a Domicilio' : '🏪 Recojo en Local'}\n`;
 
                     if (this.checkoutDeliveryType === 'delivery') {
-                        msg += `🏡 *Dirección de Envío:* ${this.checkoutAddress.trim()}\n`;
+                        msg += `• *Dirección:* ${this.checkoutAddress.trim()}\n`;
                         if (this.checkoutReference.trim()) {
-                            msg += `🏢 *Referencia:* ${this.checkoutReference.trim()}\n`;
+                            msg += `• *Referencia:* ${this.checkoutReference.trim()}\n`;
                         }
-                        msg += `🗺️ *Ubicación GPS:* https://www.google.com/maps/search/?api=1&query=${this.gpsCoords.replace(/\s/g, '')}\n`;
-                        msg += `📏 *Distancia a la Sede:* ${this.deliveryDistance.toFixed(2)} km\n`;
+                        msg += `• *GPS Maps:* https://www.google.com/maps/search/?api=1&query=${this.gpsCoords.replace(/\s/g, '')}\n`;
+                        msg += `• *Distancia:* ${this.deliveryDistance.toFixed(2)} km\n`;
                     }
 
                     if (this.checkoutNotes.trim()) {
-                        msg += `📝 *Notas Generales:* ${this.checkoutNotes.trim()}\n`;
+                        msg += `• *Notas del Pedido:* ${this.checkoutNotes.trim()}\n`;
                     }
 
-                    msg += `\n📋 *DETALLE DEL PEDIDO:* \n`;
+                    msg += `\n📋 *DETALLE DEL PEDIDO*\n${divider}\n`;
                     this.cart.forEach(item => {
-                        let itemNoteStr = item.note ? ` _[Nota: ${item.note}]_` : '';
-                        msg += `• ${item.quantity}x *${item.name}*${itemNoteStr} | S/ ${(item.price * item.quantity).toFixed(2)}\n`;
+                        let noteStr = item.note ? `\n   └ _Nota: ${item.note}_` : '';
+                        msg += `• *${item.quantity}x* ${item.name}${noteStr} — S/ ${(item.price * item.quantity).toFixed(2)}\n`;
                     });
 
                     const subtotal = this.getCartTotal();
                     const delivery = this.checkoutDeliveryType === 'delivery' ? this.deliveryCost : 0;
                     const total = subtotal + delivery;
 
-                    msg += `\n📦 *Subtotal:* S/ ${subtotal.toFixed(2)}\n`;
+                    msg += `\n💰 *RESUMEN DE PAGO*\n${divider}\n`;
+                    msg += `• *Subtotal:* S/ ${subtotal.toFixed(2)}\n`;
                     if (this.checkoutDeliveryType === 'delivery') {
-                        msg += `🚚 *Envío:* S/ ${delivery.toFixed(2)}\n`;
+                        msg += `• *Costo de Envío:* S/ ${delivery.toFixed(2)}\n`;
                     }
-                    msg += `💰 *TOTAL GENERAL: S/ ${total.toFixed(2)}*\n\n`;
-                    msg += `💳 *Método de Pago:* ${this.checkoutPaymentMethod === 'yape' ? 'Yape/Plin' : 'Efectivo'}\n`;
+                    msg += `• *TOTAL GENERAL: S/ ${total.toFixed(2)}*\n`;
+                    msg += `• *Método de Pago:* ${this.checkoutPaymentMethod === 'yape' ? '📱 Yape / Plin' : '💵 Efectivo'}\n`;
+
+                    if (this.checkoutPaymentMethod === 'cash' && this.cashAmountToPay) {
+                        const paid = parseFloat(this.cashAmountToPay);
+                        if (paid > total) {
+                            msg += `  └ _Paga con S/ ${paid.toFixed(2)} (Vuelto: S/ ${(paid - total).toFixed(2)})_\n`;
+                        }
+                    }
+
+                    msg += `\n📸 *(Adjuntar captura del pago acá abajo para confirmar el pedido)*`;
 
                     const url = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(msg)}`;
                     window.open(url, '_blank');
@@ -766,100 +830,96 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-dj-sand text-dj-charcoal font-sans min-h-screen selection:bg-dj-teal selection:text-white transition-all duration-150 relative pb-10"
+<body class="bg-dj-bg text-dj-textMain font-sans min-h-screen selection:bg-dj-amber selection:text-black transition-all duration-150 relative pb-10"
       x-data="djavyApp()"
       :class="isCartOpen || isDetailOpen ? 'overflow-hidden h-screen' : ''"
       x-init="initData()">
 
-    <!-- BARRA SUPERIOR DE INFORMACIÓN Y SEDES EXPLÍCITAS -->
-    <div class="bg-dj-tealDark text-white py-2 px-4 text-xs border-b border-dj-gold/20">
+    <!-- BARRA SUPERIOR CON ESTADO EN TIEMPO REAL -->
+    <div class="bg-[#0A0808] text-dj-textMuted py-2 px-4 text-xs border-b border-dj-line">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-dj-gold text-dj-tealDark shadow-xs">
-                    <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-emerald-400 animate-pulse"></span>
-                    <span>Abierto en Piura</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-xs"
+                      :class="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : (isCurrentSedeOpen() ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40')">
+                    <span class="w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse"
+                          :class="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'bg-amber-400' : (isCurrentSedeOpen() ? 'bg-emerald-400' : 'bg-rose-400')"></span>
+                    <span x-text="['TEST', 'TESTING', 'PRUEBAS', 'SIEMPRE', 'MODO_PRUEBA', 'SI'].includes((activeSchedule || '').toUpperCase().trim()) ? 'Modo Pruebas / Promo Activo' : (isCurrentSedeOpen() ? 'Sede Abierta en Piura' : 'Sede Cerrada actualmente')"></span>
                 </span>
-                <span class="font-medium text-[11px] text-dj-goldLight">
-                    <i class="fa-solid fa-location-dot text-dj-gold mr-1"></i>
-                    <strong class="text-white">4 Sedes:</strong> Puente Rojo • San José • Av. Progreso (Castilla) • Country Club
+                <span class="font-medium text-[11px] text-dj-textMuted">
+                    <i class="fa-solid fa-fire text-dj-amber mr-1"></i>
+                    <strong class="text-dj-textMain">4 Sedes Parrilleras:</strong> Puente Rojo • San José • Av. Progreso • Country Club
                 </span>
             </div>
-            <div class="flex items-center gap-3 font-medium text-[11px] text-dj-goldLight">
-                <span><i class="fa-solid fa-motorcycle text-dj-gold mr-1"></i> Delivery estimado: <span x-text="deliveryTimeEstimate" class="text-white font-semibold"></span></span>
+            <div class="flex items-center gap-3 font-medium text-[11px] text-dj-textMuted">
+                <span><i class="fa-solid fa-motorcycle text-dj-amber mr-1"></i> Delivery estimado: <span x-text="deliveryTimeEstimate" class="text-dj-textMain font-semibold"></span></span>
             </div>
         </div>
     </div>
 
-    <!-- HEADER PRINCIPAL CON REDES SOCIALES ARRIBA -->
-    <header class="bg-white border-b border-dj-line py-3.5 px-4 sticky top-0 z-40 shadow-sm backdrop-blur-md bg-white/95">
+    <!-- HEADER PRINCIPAL ESTILO PARRILLA OSCURA -->
+    <header class="bg-dj-bg/95 border-b border-dj-line py-3.5 px-4 sticky top-0 z-40 backdrop-blur-md shadow-lg">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div id="logo-container" class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white overflow-hidden shadow-md border-2 border-dj-gold flex items-center justify-center p-0.5">
+                <div id="logo-container" class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-dj-card overflow-hidden shadow-md border-2 border-dj-amber flex items-center justify-center p-0.5">
                     <img :src="logoUrl" alt="Logo D´JAVY" class="w-full h-full object-cover rounded-full">
                 </div>
                 <div>
-                    <h1 class="font-display font-bold text-2xl md:text-3xl tracking-wide text-dj-teal leading-none">D´JAVY</h1>
-                    <p class="text-[9px] md:text-xs font-extrabold tracking-widest text-dj-gold uppercase mt-0.5">Cevichería · Anticuchería</p>
+                    <h1 class="font-display font-bold text-2xl md:text-3xl tracking-wide text-dj-textMain leading-none flex items-center gap-2">
+                        D´JAVY
+                        <span class="text-xs bg-dj-amber/10 text-dj-amber border border-dj-amber/30 px-2 py-0.5 rounded-md font-sans font-bold uppercase tracking-wider hidden sm:inline-block">Parrillas & Ceviches</span>
+                    </h1>
+                    <p class="text-[9px] md:text-xs font-extrabold tracking-widest text-dj-amber uppercase mt-0.5">Sabor Criollo al Carbón</p>
                 </div>
             </div>
 
-            <!-- REDES SOCIALES EN CABECERA Y CARRITO DE COMPRAS -->
+            <!-- REDES SOCIALES EN CABECERA -->
             <div class="flex items-center gap-2 sm:gap-4">
-                <div class="flex items-center gap-1.5 sm:gap-2 bg-dj-sand px-3 py-1.5 rounded-full border border-dj-line">
-                    <a href="https://instagram.com/djavy.pe" target="_blank" class="w-7 h-7 rounded-full bg-white hover:bg-dj-teal hover:text-white text-dj-teal flex items-center justify-center transition shadow-xs" title="Instagram">
+                <div class="flex items-center gap-1.5 sm:gap-2 bg-dj-card px-3 py-1.5 rounded-full border border-dj-line">
+                    <a href="https://instagram.com/djavy.pe" target="_blank" class="w-7 h-7 rounded-full bg-dj-bg hover:bg-dj-amber hover:text-black text-dj-textMuted flex items-center justify-center transition shadow-xs" title="Instagram">
                         <i class="fa-brands fa-instagram text-xs"></i>
                     </a>
-                    <a href="https://www.facebook.com/CevicheriaAnticucheriaDjavy/?locale=es_LA" target="_blank" class="w-7 h-7 rounded-full bg-white hover:bg-dj-teal hover:text-white text-dj-teal flex items-center justify-center transition shadow-xs" title="Facebook">
+                    <a href="https://facebook.com/CevicheriaAnticucheria" target="_blank" class="w-7 h-7 rounded-full bg-dj-bg hover:bg-dj-amber hover:text-black text-dj-textMuted flex items-center justify-center transition shadow-xs" title="Facebook">
                         <i class="fa-brands fa-facebook-f text-xs"></i>
                     </a>
-                    <a href="https://tiktok.com/@djavy.piura" target="_blank" class="w-7 h-7 rounded-full bg-white hover:bg-dj-teal hover:text-white text-dj-teal flex items-center justify-center transition shadow-xs" title="TikTok">
+                    <a href="https://tiktok.com/@djavy.piura" target="_blank" class="w-7 h-7 rounded-full bg-dj-bg hover:bg-dj-amber hover:text-black text-dj-textMuted flex items-center justify-center transition shadow-xs" title="TikTok">
                         <i class="fa-brands fa-tiktok text-xs"></i>
                     </a>
                 </div>
 
                 <button @click="isCartOpen = true"
-                        class="relative p-3 bg-dj-teal hover:bg-dj-tealDark text-white rounded-full transition-all shadow-md flex items-center justify-center">
-                    <i class="fa-solid fa-bowl-food text-lg"></i>
+                        class="relative p-3 bg-dj-amber hover:bg-dj-amberDark text-black rounded-full transition-all shadow-md flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-fire-burner text-lg"></i>
                     <span x-show="getCartItemsCount() > 0"
-                          class="absolute -top-1 -right-1 bg-dj-gold text-dj-tealDark font-extrabold text-[10px] h-5 w-5 rounded-full flex items-center justify-center animate-bounce shadow-md border border-white"
+                          class="absolute -top-1 -right-1 bg-white text-black font-extrabold text-[10px] h-5 w-5 rounded-full flex items-center justify-center animate-bounce shadow-md border border-black"
                           x-text="getCartItemsCount()"></span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- BANNER DE SINCRO CON GOOGLE SHEETS -->
-    <div x-show="isLoadingMenu" class="max-w-6xl mx-auto px-4 mt-4">
-        <div class="bg-dj-teal/10 border border-dj-teal/20 rounded-2xl p-3 flex items-center gap-3 text-xs text-dj-teal font-semibold animate-pulse">
-            <i class="fa-solid fa-arrows-rotate animate-spin text-dj-teal text-sm"></i>
-            <span>Sincronizando la carta en tiempo real con Google Sheets...</span>
-        </div>
-    </div>
-
-    <!-- HERO BANNER ELEGANTE REINVENTADO -->
+    <!-- HERO BANNER OSCURO ESTILO PARRILLEROS -->
     <div class="max-w-6xl mx-auto px-4 mt-6">
-        <div class="relative bg-gradient-to-r from-dj-tealDark via-dj-teal to-[#135A54] rounded-3xl p-6 md:p-10 border border-dj-gold/30 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl text-white">
+        <div class="relative bg-gradient-to-r from-[#1E1B18] via-[#2A2421] to-[#1A1614] rounded-3xl p-6 md:p-10 border border-dj-amber/30 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl text-dj-textMain">
             <div class="space-y-4 text-center md:text-left z-10 max-w-xl">
-                <span class="bg-dj-gold/20 text-dj-goldLight border border-dj-gold/30 text-[10px] font-extrabold uppercase tracking-widest px-3.5 py-1 rounded-full backdrop-blur-xs">
-                    TRADICIÓN PIURANA AL CARBÓN Y AL LIMÓN
+                <span class="bg-dj-amber/10 text-dj-amber border border-dj-amber/30 text-[10px] font-extrabold uppercase tracking-widest px-3.5 py-1 rounded-full backdrop-blur-xs inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-fire text-dj-amber"></i> PARRILLAS AL CARBÓN & CEVICHES FRESCOS
                 </span>
-                <h2 class="font-display font-bold text-3xl md:text-5xl leading-tight text-white drop-shadow-sm">
-                    Ceviche fresco. <br class="hidden md:inline"> <span class="text-dj-gold">Anticuchos al carbón.</span>
+                <h2 class="font-display font-bold text-3xl md:text-5xl leading-tight text-white drop-shadow-md">
+                    Anticuchos al carbón. <br class="hidden md:inline"> <span class="text-dj-amber">Ceviche norteño fresco.</span>
                 </h2>
-                <p class="text-xs md:text-sm text-dj-sand/90 leading-relaxed font-normal">
-                    Ingredientes marinos seleccionados al momento y parrilla tradicional piurana. Pide a domicilio desde cualquiera de nuestras 4 sedes.
+                <p class="text-xs md:text-sm text-dj-textMuted leading-relaxed font-normal">
+                    La combinación perfecta de la costa piurana. Sabor ahumado auténtico y marinado al instante en nuestras 4 sedes.
                 </p>
                 <div class="pt-2">
-                    <button @click="scrollToMenu('marino')" class="px-7 py-3 bg-dj-gold hover:bg-yellow-600 text-dj-tealDark font-extrabold text-xs uppercase tracking-wider rounded-xl transition shadow-lg transform active:scale-95">
-                        Explorar Carta
+                    <button @click="scrollToMenu('parrillas')" class="px-7 py-3 bg-dj-amber hover:bg-dj-amberDark text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition shadow-lg transform active:scale-95">
+                        Ver Parrillas & Combos
                     </button>
                 </div>
             </div>
 
-            <div class="w-48 h-48 md:w-60 md:h-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-dj-gold/50 transition-all duration-300 transform rotate-1 hover:rotate-0 flex-shrink-0">
-
-    <img src="https://i.postimg.cc/SQctscJN/images-(1).jpg" alt="Plato D´JAVY" class="w-full h-full object-cover">
-</div>
+            <div class="w-48 h-48 md:w-60 md:h-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-dj-amber/40 transition-all duration-300 transform rotate-1 hover:rotate-0 flex-shrink-0">
+                <img :src="heroImageUrl" alt="Plato D´JAVY" class="w-full h-full object-cover">
+            </div>
         </div>
     </div>
 
@@ -868,28 +928,28 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
 
             <!-- Sidebar Categorías & Buscador -->
-            <aside class="lg:col-span-1 sticky top-[80px] z-30 bg-dj-sand lg:bg-transparent -mx-4 px-4 py-2 lg:p-0 lg:m-0 border-b border-dj-line lg:border-none space-y-3">
+            <aside class="lg:col-span-1 sticky top-[80px] z-30 bg-dj-bg lg:bg-transparent -mx-4 px-4 py-2 lg:p-0 lg:m-0 border-b border-dj-line lg:border-none space-y-3">
                 <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-dj-charcoal/40 text-xs"></i>
-                    <input type="text" x-model="searchTerm" placeholder="Buscar plato..."
-                           class="w-full text-xs py-3 pl-9 pr-3 rounded-xl border border-dj-line focus:border-dj-teal focus:ring-1 focus:ring-dj-teal outline-none bg-white font-semibold text-dj-charcoal shadow-xs">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-dj-textMuted text-xs"></i>
+                    <input type="text" x-model="searchTerm" placeholder="Buscar plato o combo..."
+                           class="w-full text-xs py-3 pl-9 pr-3 rounded-xl border border-dj-line focus:border-dj-amber focus:ring-1 focus:ring-dj-amber outline-none bg-dj-card font-semibold text-dj-textMain shadow-xs">
                 </div>
 
-                <h3 class="hidden lg:block font-display font-semibold text-lg text-dj-teal px-1">Categorías</h3>
+                <h3 class="hidden lg:block font-display font-semibold text-lg text-dj-amber px-1">Nuestra Carta</h3>
                 <div class="flex lg:flex-col gap-2 overflow-x-auto no-scrollbar lg:overflow-visible pb-2 lg:pb-0">
                     <button @click="selectedCategory = 'todas'"
                             class="px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap tracking-wide transition-all duration-200 text-left w-auto lg:w-full flex items-center justify-between gap-3 border"
-                            :class="selectedCategory === 'todas' ? 'bg-dj-teal text-white border-dj-teal shadow-md' : 'bg-white hover:bg-dj-teal/5 text-dj-charcoal border-dj-line'">
-                        <span>🍽️ Todo el Menú</span>
-                        <span class="hidden lg:inline text-[10px] bg-dj-sand text-dj-teal px-2 py-0.5 rounded-full font-bold" x-text="products.length"></span>
+                            :class="selectedCategory === 'todas' ? 'bg-dj-amber text-black border-dj-amber shadow-md' : 'bg-dj-card hover:bg-dj-cardHover text-dj-textMain border-dj-line'">
+                        <span>🔥 Todo el Menú</span>
+                        <span class="hidden lg:inline text-[10px] bg-dj-bg text-dj-amber px-2 py-0.5 rounded-full font-bold" x-text="products.length"></span>
                     </button>
 
                     <template x-for="cat in categories" :key="cat.id">
                         <button @click="selectedCategory = cat.id"
                                 class="px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap tracking-wide transition-all duration-200 text-left w-auto lg:w-full flex items-center justify-between gap-3 border"
-                                :class="selectedCategory === cat.id ? 'bg-dj-teal text-white border-dj-teal shadow-md' : 'bg-white hover:bg-dj-teal/5 text-dj-charcoal border-dj-line'">
+                                :class="selectedCategory === cat.id ? 'bg-dj-amber text-black border-dj-amber shadow-md' : 'bg-dj-card hover:bg-dj-cardHover text-dj-textMain border-dj-line'">
                             <span x-text="cat.name"></span>
-                            <span class="hidden lg:inline text-[10px] bg-dj-sand text-dj-teal px-2 py-0.5 rounded-full font-bold" x-text="getProductsCountInCategory(cat.id)"></span>
+                            <span class="hidden lg:inline text-[10px] bg-dj-bg text-dj-amber px-2 py-0.5 rounded-full font-bold" x-text="getProductsCountInCategory(cat.id)"></span>
                         </button>
                     </template>
                 </div>
@@ -899,30 +959,30 @@
             <div class="lg:col-span-3 space-y-10">
                 <template x-for="cat in categories" :key="cat.id">
                     <div x-show="shouldShowCategory(cat.id)" class="space-y-4" :id="`sec-${cat.id}`">
-                        <h3 class="font-display font-bold text-xl md:text-2xl text-dj-teal border-b-2 border-dj-gold pb-2 flex justify-between items-center">
+                        <h3 class="font-display font-bold text-xl md:text-2xl text-dj-amber border-b border-dj-line pb-2 flex justify-between items-center">
                             <span x-text="cat.name"></span>
                         </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <template x-for="product in getFilteredProducts(cat.id)" :key="product.id">
                                 <div @click="openProductDetail(product)"
-                                     class="bg-white rounded-2xl border border-dj-line overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex items-stretch min-h-[130px] cursor-pointer hover:border-dj-gold/60 group">
+                                     class="bg-dj-card rounded-2xl border border-dj-line overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex items-stretch min-h-[130px] cursor-pointer hover:border-dj-amber/60 group">
 
-                                    <div class="w-28 sm:w-32 flex-shrink-0 relative overflow-hidden bg-dj-sand">
+                                    <div class="w-28 sm:w-32 flex-shrink-0 relative overflow-hidden bg-dj-bg">
                                         <img :src="product.image || 'https://i.postimg.cc/fbyGFkW3/844ea0ac-03e3-4316-9e21-2e16df6c9387.jpg'"
                                              :alt="product.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                                     </div>
 
                                     <div class="p-3.5 flex flex-col justify-between flex-1 space-y-2">
                                         <div>
-                                            <h4 class="font-bold text-sm text-dj-charcoal group-hover:text-dj-teal transition-colors" x-text="product.name"></h4>
-                                            <p class="text-[11px] text-dj-charcoal/70 line-clamp-2 leading-relaxed mt-0.5 font-medium" x-text="product.description"></p>
+                                            <h4 class="font-bold text-sm text-dj-textMain group-hover:text-dj-amber transition-colors" x-text="product.name"></h4>
+                                            <p class="text-[11px] text-dj-textMuted line-clamp-2 leading-relaxed mt-0.5 font-medium" x-text="product.description"></p>
                                         </div>
 
-                                        <div class="flex items-center justify-between pt-2 border-t border-dj-sand">
-                                            <span class="font-extrabold text-sm text-dj-teal" x-text="`S/ ${product.price.toFixed(2)}`"></span>
+                                        <div class="flex items-center justify-between pt-2 border-t border-dj-line">
+                                            <span class="font-extrabold text-sm text-dj-amber" x-text="`S/ ${product.price.toFixed(2)}`"></span>
                                             <button @click.stop="openProductDetail(product)"
-                                                    class="px-3.5 py-1.5 bg-dj-teal hover:bg-dj-tealDark text-white text-xs font-bold rounded-lg transition shadow-xs flex items-center gap-1">
+                                                    class="px-3 py-1 bg-dj-amber hover:bg-dj-amberDark text-black text-xs font-bold rounded-lg transition shadow-xs flex items-center gap-1">
                                                 <i class="fa-solid fa-plus text-[9px]"></i>
                                                 <span>Pedir</span>
                                             </button>
@@ -939,53 +999,53 @@
 
     <!-- MODAL DETALLE DE PRODUCTO CON OPCIÓN DE COMENTARIO PERSONALIZADO -->
     <div x-show="isDetailOpen" class="fixed inset-0 z-50 overflow-hidden flex items-center justify-center p-4 sm:p-6" style="display: none;">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs transition-opacity" @click="isDetailOpen = false"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-xs transition-opacity" @click="isDetailOpen = false"></div>
 
-        <div class="bg-white rounded-3xl overflow-hidden max-w-lg w-full shadow-2xl border border-dj-gold/30 relative z-10 flex flex-col max-h-[85vh] sm:max-h-[90vh]">
+        <div class="bg-dj-card rounded-3xl overflow-hidden max-w-lg w-full shadow-2xl border border-dj-amber/40 relative z-10 flex flex-col max-h-[85vh] sm:max-h-[90vh] text-dj-textMain">
 
-            <button @click="isDetailOpen = false" class="absolute top-4 right-4 z-20 bg-black/60 hover:bg-dj-teal text-white w-8 h-8 rounded-full flex items-center justify-center transition">
+            <button @click="isDetailOpen = false" class="absolute top-4 right-4 z-20 bg-black/60 hover:bg-dj-amber hover:text-black text-white w-8 h-8 rounded-full flex items-center justify-center transition">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
 
-            <div class="h-44 sm:h-52 w-full relative overflow-hidden bg-dj-sand flex-shrink-0">
+            <div class="h-44 sm:h-52 w-full relative overflow-hidden bg-dj-bg flex-shrink-0">
                 <img :src="selectedProductForDetail?.image || 'https://i.postimg.cc/fbyGFkW3/844ea0ac-03e3-4316-9e21-2e16df6c9387.jpg'"
                      :alt="selectedProductForDetail?.name" class="w-full h-full object-cover">
             </div>
 
             <div class="p-5 space-y-4 flex-1 overflow-y-auto">
                 <div>
-                    <h3 class="font-display font-bold text-2xl text-dj-teal" x-text="selectedProductForDetail?.name"></h3>
-                    <p class="text-xs sm:text-sm text-dj-charcoal/80 font-medium leading-relaxed mt-1" x-text="selectedProductForDetail?.description"></p>
+                    <h3 class="font-display font-bold text-2xl text-dj-amber" x-text="selectedProductForDetail?.name"></h3>
+                    <p class="text-xs sm:text-sm text-dj-textMuted font-medium leading-relaxed mt-1" x-text="selectedProductForDetail?.description"></p>
                 </div>
 
-                <div class="flex items-center justify-between bg-dj-sand p-3.5 rounded-xl border border-dj-line">
-                    <span class="text-xs font-bold text-dj-charcoal">Cantidad de porciones</span>
-                    <div class="flex items-center gap-3 bg-white border border-dj-teal/20 rounded-xl px-3 py-1 shadow-xs">
-                        <button type="button" @click="decreaseModalQty()" class="text-dj-teal font-black px-1 text-sm"><i class="fa-solid fa-minus"></i></button>
-                        <span class="text-sm font-black text-dj-charcoal min-w-[20px] text-center" x-text="modalQuantity"></span>
-                        <button type="button" @click="increaseModalQty()" class="text-dj-teal font-black px-1 text-sm"><i class="fa-solid fa-plus"></i></button>
+                <div class="flex items-center justify-between bg-dj-bg p-3.5 rounded-xl border border-dj-line">
+                    <span class="text-xs font-bold text-dj-textMain">Cantidad de porciones</span>
+                    <div class="flex items-center gap-3 bg-dj-card border border-dj-amber/30 rounded-xl px-3 py-1 shadow-xs">
+                        <button type="button" @click="decreaseModalQty()" class="text-dj-amber font-black px-1 text-sm"><i class="fa-solid fa-minus"></i></button>
+                        <span class="text-sm font-black text-dj-textMain min-w-[20px] text-center" x-text="modalQuantity"></span>
+                        <button type="button" @click="increaseModalQty()" class="text-dj-amber font-black px-1 text-sm"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
 
                 <!-- OPCIÓN DE COMENTARIOS / ESPECIFICACIONES SOBRE EL PLATO (ACTIVABLE SEGÚN GOOGLE SHEET) -->
                 <template x-if="selectedProductForDetail?.allowComment">
                     <div class="space-y-1.5 border-t border-dj-line pt-3">
-                        <label class="block text-xs font-bold text-dj-teal uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-pen-to-square text-dj-gold"></i>
+                        <label class="block text-xs font-bold text-dj-amber uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-pen-to-square text-dj-amber"></i>
                             <span>Especificaciones para este plato (Opcional):</span>
                         </label>
-                        <textarea x-model="modalNote" rows="2" placeholder="Ej: Poco picante, sin cebolla, cremas aparte..."
-                                  class="w-full text-xs p-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-medium text-dj-charcoal resize-none"></textarea>
+                        <textarea x-model="modalNote" rows="2" placeholder="Ej: Poco picante, sin cebolla, término medio..."
+                                  class="w-full text-xs p-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-medium text-dj-textMain resize-none"></textarea>
                     </div>
                 </template>
 
                 <div class="flex items-center justify-between pt-4 border-t border-dj-line">
                     <div>
-                        <span class="text-[10px] text-dj-charcoal/50 font-extrabold uppercase tracking-wider block">Precio Unitario</span>
-                        <span class="font-black text-xl text-dj-teal" x-text="`S/ ${selectedProductForDetail?.price.toFixed(2)}`"></span>
+                        <span class="text-[10px] text-dj-textMuted font-extrabold uppercase tracking-wider block">Precio Unitario</span>
+                        <span class="font-black text-xl text-dj-amber" x-text="`S/ ${selectedProductForDetail?.price.toFixed(2)}`"></span>
                     </div>
                     <button @click="addToCartWithQty(selectedProductForDetail, modalQuantity); isDetailOpen = false"
-                            class="px-6 py-3 bg-dj-teal hover:bg-dj-tealDark text-white text-xs font-extrabold rounded-xl transition shadow-md flex items-center gap-2">
+                            class="px-6 py-3 bg-dj-amber hover:bg-dj-amberDark text-black text-xs font-extrabold rounded-xl transition shadow-md flex items-center gap-2">
                         <i class="fa-solid fa-plus text-[10px]"></i>
                         <span>Agregar al Pedido</span>
                     </button>
@@ -996,24 +1056,24 @@
 
     <!-- CAJÓN DESLIZANTE: CARRITO Y CHECKOUT MULTI-SEDE -->
     <div x-show="isCartOpen" class="fixed inset-0 z-50 overflow-hidden" style="display: none;">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity" @click="isCartOpen = false"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-xs transition-opacity" @click="isCartOpen = false"></div>
 
         <div class="absolute inset-y-0 right-0 max-w-full flex">
-            <div class="w-screen max-w-lg bg-white flex flex-col h-full shadow-2xl border-l border-dj-teal/10">
+            <div class="w-screen max-w-lg bg-dj-card text-dj-textMain flex flex-col h-full shadow-2xl border-l border-dj-line">
 
-                <div class="p-4 bg-dj-teal text-white flex items-center justify-between flex-shrink-0">
+                <div class="p-4 bg-dj-bg text-dj-textMain border-b border-dj-line flex items-center justify-between flex-shrink-0">
                     <div class="flex items-center gap-2">
-                        <button x-show="currentStep === 'checkout'" @click="currentStep = 'cart'" class="text-white hover:text-dj-gold mr-1 text-xs flex items-center gap-1 bg-white/10 px-2.5 py-1.5 rounded-lg transition font-extrabold">
+                        <button x-show="currentStep === 'checkout'" @click="currentStep = 'cart'" class="text-dj-textMain hover:text-dj-amber mr-1 text-xs flex items-center gap-1 bg-dj-card px-2.5 py-1.5 rounded-lg transition font-extrabold border border-dj-line">
                             <i class="fa-solid fa-chevron-left text-[10px]"></i> Volver
                         </button>
-                        <h2 class="font-display font-semibold text-base sm:text-lg tracking-wide" x-text="currentStep === 'cart' ? 'Tu Pedido D´JAVY' : 'Finalizar Pedido'"></h2>
+                        <h2 class="font-display font-semibold text-base sm:text-lg tracking-wide text-dj-amber" x-text="currentStep === 'cart' ? 'Tu Pedido D´JAVY' : 'Finalizar Pedido'"></h2>
                     </div>
-                    <button @click="isCartOpen = false" class="text-white text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+                    <button @click="isCartOpen = false" class="text-dj-textMuted hover:text-white text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
-                <div x-show="errorMessage" class="bg-rose-50 text-rose-800 text-xs px-4 py-2.5 border-b border-rose-200 flex items-center justify-between flex-shrink-0">
+                <div x-show="errorMessage" class="bg-rose-950/40 text-rose-300 text-xs px-4 py-2.5 border-b border-rose-800/40 flex items-center justify-between flex-shrink-0">
                     <span x-text="errorMessage" class="font-semibold"></span>
-                    <button @click="errorMessage = ''" class="text-rose-500 font-bold px-2">X</button>
+                    <button @click="errorMessage = ''" class="text-rose-400 font-bold px-2">X</button>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-4 space-y-5">
@@ -1021,32 +1081,32 @@
                     <!-- PASO 1: CARRITO -->
                     <div x-show="currentStep === 'cart'" class="space-y-4">
                         <div x-show="cart.length === 0" class="text-center py-12 space-y-3">
-                            <i class="fa-solid fa-basket-shopping text-4xl text-dj-teal/30"></i>
-                            <p class="text-xs font-bold text-dj-charcoal/80">Tu carrito está vacío. Agrega tus platos de la carta.</p>
+                            <i class="fa-solid fa-fire text-4xl text-dj-line"></i>
+                            <p class="text-xs font-bold text-dj-textMuted">Tu pedido está vacío. Explora nuestra carta.</p>
                         </div>
 
                         <div x-show="cart.length > 0" class="divide-y divide-dj-line">
                             <template x-for="item in cart" :key="item.id">
                                 <div class="py-3 flex items-center justify-between gap-3">
-                                    <div class="w-11 h-11 rounded-xl overflow-hidden bg-dj-sand border border-dj-line flex-shrink-0">
+                                    <div class="w-11 h-11 rounded-xl overflow-hidden bg-dj-bg border border-dj-line flex-shrink-0">
                                         <img :src="item.image || 'https://i.postimg.cc/fbyGFkW3/844ea0ac-03e3-4316-9e21-2e16df6c9387.jpg'" alt="" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1">
-                                        <h4 class="font-bold text-xs text-dj-charcoal" x-text="item.name"></h4>
+                                        <h4 class="font-bold text-xs text-dj-textMain" x-text="item.name"></h4>
                                         <template x-if="item.note">
-                                            <p class="text-[10px] text-dj-teal font-semibold mt-0.5">
-                                                Nota: <span class="text-dj-charcoal/80 italic" x-text="item.note"></span>
+                                            <p class="text-[10px] text-dj-amber font-semibold mt-0.5">
+                                                Nota: <span class="text-dj-textMuted italic" x-text="item.note"></span>
                                             </p>
                                         </template>
-                                        <p class="text-[11px] font-extrabold text-dj-teal mt-0.5" x-text="`S/ ${item.price.toFixed(2)}`"></p>
+                                        <p class="text-[11px] font-extrabold text-dj-amber mt-0.5" x-text="`S/ ${item.price.toFixed(2)}`"></p>
                                     </div>
-                                    <div class="flex items-center gap-1.5 border border-dj-line rounded-lg px-2 py-1 bg-dj-sand">
-                                        <button @click="decreaseQty(item)" class="text-dj-teal px-1 text-xs font-bold"><i class="fa-solid fa-minus"></i></button>
-                                        <span class="text-xs font-bold text-dj-charcoal px-1" x-text="item.quantity"></span>
-                                        <button @click="increaseQty(item)" class="text-dj-teal px-1 text-xs font-bold"><i class="fa-solid fa-plus"></i></button>
+                                    <div class="flex items-center gap-1.5 border border-dj-line rounded-lg px-2 py-1 bg-dj-bg">
+                                        <button @click="decreaseQty(item)" class="text-dj-amber px-1 text-xs font-bold"><i class="fa-solid fa-minus"></i></button>
+                                        <span class="text-xs font-bold text-dj-textMain px-1" x-text="item.quantity"></span>
+                                        <button @click="increaseQty(item)" class="text-dj-amber px-1 text-xs font-bold"><i class="fa-solid fa-plus"></i></button>
                                     </div>
                                     <div class="text-right min-w-[60px]">
-                                        <span class="font-extrabold text-xs text-dj-charcoal" x-text="`S/ ${(item.price * item.quantity).toFixed(2)}`"></span>
+                                        <span class="font-extrabold text-xs text-dj-textMain" x-text="`S/ ${(item.price * item.quantity).toFixed(2)}`"></span>
                                         <button @click="removeItem(item)" class="block text-rose-400 text-xs mt-1 ml-auto p-0.5"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </div>
@@ -1058,26 +1118,26 @@
                     <div x-show="currentStep === 'checkout'" class="space-y-4">
 
                         <!-- Interruptor de Guardar Datos -->
-                        <div class="bg-dj-teal/5 p-3 rounded-xl border border-dj-line flex items-center justify-between gap-3">
+                        <div class="bg-dj-bg p-3 rounded-xl border border-dj-line flex items-center justify-between gap-3">
                             <div class="flex-1">
-                                <h4 class="text-[10px] sm:text-xs font-black text-dj-teal uppercase tracking-wider">💾 Guardar mis datos</h4>
-                                <p class="text-[9px] sm:text-[10px] text-dj-charcoal/80 font-medium mt-0.5">Rellena el formulario automáticamente en tus próximas compras.</p>
+                                <h4 class="text-[10px] sm:text-xs font-black text-dj-amber uppercase tracking-wider">💾 Guardar mis datos</h4>
+                                <p class="text-[9px] sm:text-[10px] text-dj-textMuted font-medium mt-0.5">Autocompletar formulario en tus siguientes visitas.</p>
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" x-model="saveUserData" class="sr-only peer">
-                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-dj-teal"></div>
+                                <div class="w-9 h-5 bg-gray-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-dj-amber"></div>
                             </label>
                         </div>
 
                         <!-- Selector & Asignador de Sede -->
                         <div class="space-y-2">
                             <div class="flex items-center justify-between">
-                                <h3 class="font-display font-semibold text-xs text-dj-teal border-b border-dj-gold pb-0.5 uppercase tracking-wider">
+                                <h3 class="font-display font-semibold text-xs text-dj-amber border-b border-dj-amber/30 pb-0.5 uppercase tracking-wider">
                                     Sede Asignada para el Pedido:
                                 </h3>
                                 <template x-if="autoNearestSedeName">
-                                    <span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-300">
-                                        <i class="fa-solid fa-bolt mr-1 text-emerald-600"></i>Sede más cercana detectada
+                                    <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/40">
+                                        <i class="fa-solid fa-bolt mr-1 text-amber-400"></i>Sede más cercana
                                     </span>
                                 </template>
                             </div>
@@ -1085,14 +1145,15 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <template x-for="sede in sedes" :key="sede.id">
                                     <button type="button" @click="selectSede(sede.id, true)"
-                                            :class="selectedSedeId === sede.id ? 'bg-dj-teal text-white border-dj-teal shadow-xs' : 'bg-dj-sand text-dj-charcoal border-dj-line hover:border-dj-teal/30'"
+                                            :class="selectedSedeId === sede.id ? 'bg-dj-amber text-black border-dj-amber shadow-sm' : 'bg-dj-bg text-dj-textMain border-dj-line hover:border-dj-amber/40'"
                                             class="text-left p-2.5 rounded-xl border text-[11px] font-bold transition relative">
                                         <div class="flex justify-between items-start">
                                             <span x-text="sede.name" class="font-extrabold text-xs"></span>
-                                            <span x-show="selectedSedeId === sede.id" class="text-[9px] bg-dj-gold text-dj-tealDark px-1.5 py-0.5 rounded font-black">ASIGNADA</span>
+                                            <span x-show="selectedSedeId === sede.id" class="text-[9px] bg-black text-dj-amber px-1.5 py-0.5 rounded font-black">ASIGNADA</span>
                                         </div>
                                         <span class="block font-semibold opacity-85 text-[10px] mt-0.5" x-text="sede.address"></span>
                                         <span class="block text-[9px] opacity-75 mt-0.5" x-text="sede.scheduleText"></span>
+                                        <span class="block text-[9px] font-black mt-1" :class="isSedeOpen(sede) ? 'text-emerald-400' : 'text-rose-400'" x-text="isSedeOpen(sede) ? '● Abierta' : '● Cerrada por Horario'"></span>
                                     </button>
                                 </template>
                             </div>
@@ -1100,31 +1161,31 @@
 
                         <!-- Formulario Cliente -->
                         <div class="space-y-3">
-                            <h3 class="font-display font-semibold text-xs text-dj-teal border-b border-dj-gold pb-1 uppercase tracking-wider">Tus Datos Personales</h3>
+                            <h3 class="font-display font-semibold text-xs text-dj-amber border-b border-dj-amber/30 pb-1 uppercase tracking-wider">Tus Datos Personales</h3>
                             <div>
-                                <label class="block text-[11px] font-extrabold text-dj-charcoal mb-1">Nombre completo *</label>
-                                <input type="text" x-model="checkoutName" placeholder="Ingresa tu nombre y apellido" class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-semibold text-dj-charcoal">
+                                <label class="block text-[11px] font-extrabold text-dj-textMain mb-1">Nombre completo *</label>
+                                <input type="text" x-model="checkoutName" placeholder="Ingresa tu nombre y apellido" class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-semibold text-dj-textMain">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-extrabold text-dj-charcoal mb-1">Celular *</label>
-                                <input type="tel" x-model="checkoutPhone" maxlength="9" placeholder="9XXXXXXXX" class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-semibold text-dj-charcoal">
+                                <label class="block text-[11px] font-extrabold text-dj-textMain mb-1">Celular *</label>
+                                <input type="tel" x-model="checkoutPhone" maxlength="9" placeholder="9XXXXXXXX" class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-semibold text-dj-textMain">
                             </div>
                         </div>
 
                         <!-- Tipo de Entrega y Ubicación GPS Interfaz -->
                         <div class="space-y-3">
-                            <h3 class="font-display font-semibold text-xs text-dj-teal border-b border-dj-gold pb-1 uppercase tracking-wider">Detalles de Entrega</h3>
+                            <h3 class="font-display font-semibold text-xs text-dj-amber border-b border-dj-amber/30 pb-1 uppercase tracking-wider">Detalles de Entrega</h3>
                             <div class="grid grid-cols-2 gap-2">
-                                <button @click="checkoutDeliveryType = 'delivery'" :class="checkoutDeliveryType === 'delivery' ? 'bg-dj-teal text-white font-bold' : 'bg-dj-sand text-dj-charcoal'" class="py-2 rounded-xl text-xs text-center transition font-semibold border border-dj-line">🛵 Delivery</button>
-                                <button @click="checkoutDeliveryType = 'local'" :class="checkoutDeliveryType === 'local' ? 'bg-dj-teal text-white font-bold' : 'bg-dj-sand text-dj-charcoal'" class="py-2 rounded-xl text-xs text-center transition font-semibold border border-dj-line">🏪 Recojo en Local</button>
+                                <button @click="checkoutDeliveryType = 'delivery'" :class="checkoutDeliveryType === 'delivery' ? 'bg-dj-amber text-black font-extrabold' : 'bg-dj-bg text-dj-textMain border border-dj-line'" class="py-2 rounded-xl text-xs text-center transition font-semibold">🛵 Delivery</button>
+                                <button @click="checkoutDeliveryType = 'local'" :class="checkoutDeliveryType === 'local' ? 'bg-dj-amber text-black font-extrabold' : 'bg-dj-bg text-dj-textMain border border-dj-line'" class="py-2 rounded-xl text-xs text-center transition font-semibold">🏪 Recojo en Local</button>
                             </div>
 
                             <div x-show="checkoutDeliveryType === 'delivery'" class="space-y-3">
                                 <div>
-                                    <label class="block text-[11px] font-extrabold text-dj-charcoal mb-1">Dirección exacta *</label>
+                                    <label class="block text-[11px] font-extrabold text-dj-textMain mb-1">Dirección exacta *</label>
                                     <div class="flex gap-2">
-                                        <input type="text" x-model="checkoutAddress" @keydown.enter.prevent="geocodeAddress()" placeholder="Calle, Av, Número, Mz o Lote" class="flex-1 text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-semibold text-dj-charcoal">
-                                        <button type="button" @click="geocodeAddress()" class="px-3.5 py-2 bg-dj-teal hover:bg-dj-tealDark text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs">
+                                        <input type="text" x-model="checkoutAddress" @keydown.enter.prevent="geocodeAddress()" placeholder="Calle, Av, Número, Mz o Lote" class="flex-1 text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-semibold text-dj-textMain">
+                                        <button type="button" @click="geocodeAddress()" class="px-3.5 py-2 bg-dj-amber hover:bg-dj-amberDark text-black text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs">
                                             <i class="fa-solid fa-magnifying-glass text-xs"></i>
                                             <span>Buscar</span>
                                         </button>
@@ -1134,51 +1195,51 @@
                                 <!-- Botón GPS Destacado -->
                                 <div>
                                     <button type="button" @click="getCurrentLocationGPS()"
-                                            class="w-full py-3 px-4 bg-dj-sand border-2 border-dashed border-dj-teal/30 hover:border-dj-teal hover:bg-dj-teal/10 text-dj-teal rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer">
-                                        <i class="fa-solid fa-location-crosshairs text-base text-dj-teal"></i>
+                                            class="w-full py-3 px-4 bg-dj-bg border border-dashed border-dj-amber/40 hover:border-dj-amber hover:bg-dj-amber/10 text-dj-amber rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer">
+                                        <i class="fa-solid fa-location-crosshairs text-base text-dj-amber"></i>
                                         <span>📍 Usar mi ubicación GPS actual</span>
                                     </button>
                                 </div>
 
                                 <div>
-                                    <label class="block text-[11px] font-extrabold text-dj-charcoal mb-1">Referencia (Opcional)</label>
-                                    <input type="text" x-model="checkoutReference" placeholder="Frente al parque, al costado de tienda..." class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-semibold text-dj-charcoal">
+                                    <label class="block text-[11px] font-extrabold text-dj-textMain mb-1">Referencia (Opcional)</label>
+                                    <input type="text" x-model="checkoutReference" placeholder="Frente al parque, al costado de tienda..." class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-semibold text-dj-textMain">
                                 </div>
 
                                 <div>
-                                    <label class="block text-[11px] font-extrabold text-dj-charcoal mb-1">Ubicación GPS (Haz Clic o Arrastra el Pin) *</label>
+                                    <label class="block text-[11px] font-extrabold text-dj-textMain mb-1">Ubicación GPS (Haz Clic o Arrastra el Pin) *</label>
                                     <div id="map" class="h-44 rounded-2xl border border-dj-line overflow-hidden shadow-inner mt-1"></div>
 
                                     <div class="grid grid-cols-2 gap-2 mt-2">
-                                        <div class="bg-dj-sand p-2 rounded-xl border border-dj-line text-[10px]">
-                                            <span class="text-dj-charcoal/60 font-extrabold block uppercase">Distancia a la Sede</span>
-                                            <span class="font-extrabold text-dj-teal text-xs" x-text="`${deliveryDistance.toFixed(2)} km`"></span>
+                                        <div class="bg-dj-bg p-2 rounded-xl border border-dj-line text-[10px]">
+                                            <span class="text-dj-textMuted font-extrabold block uppercase">Distancia a Sede</span>
+                                            <span class="font-extrabold text-dj-amber text-xs" x-text="`${deliveryDistance.toFixed(2)} km`"></span>
                                         </div>
-                                        <div class="bg-dj-sand p-2 rounded-xl border border-dj-line text-[10px]" :class="isOutOfRange ? 'bg-rose-50 border-rose-200' : ''">
-                                            <span class="text-dj-charcoal/60 font-extrabold block uppercase">Costo de Delivery</span>
-                                            <span class="font-extrabold text-xs" :class="isOutOfRange ? 'text-rose-600' : 'text-dj-teal'" x-text="isOutOfRange ? 'Fuera de Rango' : `S/ ${deliveryCost.toFixed(2)}`"></span>
+                                        <div class="bg-dj-bg p-2 rounded-xl border border-dj-line text-[10px]" :class="isOutOfRange ? 'bg-rose-950/40 border-rose-800' : ''">
+                                            <span class="text-dj-textMuted font-extrabold block uppercase">Costo Delivery</span>
+                                            <span class="font-extrabold text-xs" :class="isOutOfRange ? 'text-rose-400' : 'text-dj-amber'" x-text="isOutOfRange ? 'Fuera de Rango' : `S/ ${deliveryCost.toFixed(2)}`"></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div x-show="checkoutDeliveryType === 'local'" class="bg-dj-sand p-3 rounded-xl border border-dj-line text-xs space-y-1">
-                                <p class="font-extrabold text-dj-teal">Punto de Recojo en Sede <span x-text="getSelectedSede().name"></span>:</p>
-                                <p class="text-dj-charcoal/80 font-medium" x-text="getSelectedSede().address"></p>
+                            <div x-show="checkoutDeliveryType === 'local'" class="bg-dj-bg p-3 rounded-xl border border-dj-line text-xs space-y-1">
+                                <p class="font-extrabold text-dj-amber">Punto de Recojo en Sede <span x-text="getSelectedSede().name"></span>:</p>
+                                <p class="text-dj-textMuted font-medium" x-text="getSelectedSede().address"></p>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-[11px] font-extrabold text-dj-charcoal mb-1">Notas especiales para el pedido (Opcional)</label>
-                            <input type="text" x-model="checkoutNotes" placeholder="Ej: Entregar en recepción, timbre malogrado..." class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-semibold text-dj-charcoal">
+                            <label class="block text-[11px] font-extrabold text-dj-textMain mb-1">Notas generales del pedido (Opcional)</label>
+                            <input type="text" x-model="checkoutNotes" placeholder="Ej: Timbre no funciona, entregar en portería..." class="w-full text-xs py-2 px-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-semibold text-dj-textMain">
                         </div>
 
                         <!-- Método de Pago -->
-                        <div class="space-y-3 bg-dj-sand p-3.5 rounded-2xl border border-dj-line">
-                            <h4 class="text-xs font-display font-semibold text-dj-teal uppercase tracking-wider">Método de Pago</h4>
+                        <div class="space-y-3 bg-dj-bg p-3.5 rounded-2xl border border-dj-line">
+                            <h4 class="text-xs font-display font-semibold text-dj-amber uppercase tracking-wider">Método de Pago</h4>
                             <div class="grid grid-cols-2 gap-2">
-                                <button type="button" @click="checkoutPaymentMethod = 'yape'" :class="checkoutPaymentMethod === 'yape' ? 'bg-[#742d8c] text-white font-bold' : 'bg-white text-dj-charcoal border border-dj-line'" class="py-2 px-3 rounded-xl text-xs transition">📱 Yape / Plin</button>
-                                <button type="button" @click="checkoutPaymentMethod = 'cash'" :class="checkoutPaymentMethod === 'cash' ? 'bg-[#15803d] text-white font-bold' : 'bg-white text-dj-charcoal border border-dj-line'" class="py-2 px-3 rounded-xl text-xs transition">💵 Efectivo</button>
+                                <button type="button" @click="checkoutPaymentMethod = 'yape'" :class="checkoutPaymentMethod === 'yape' ? 'bg-[#742d8c] text-white font-bold' : 'bg-dj-card text-dj-textMain border border-dj-line'" class="py-2 px-3 rounded-xl text-xs transition">📱 Yape / Plin</button>
+                                <button type="button" @click="checkoutPaymentMethod = 'cash'" :class="checkoutPaymentMethod === 'cash' ? 'bg-[#15803d] text-white font-bold' : 'bg-dj-card text-dj-textMain border border-dj-line'" class="py-2 px-3 rounded-xl text-xs transition">💵 Efectivo</button>
                             </div>
 
                             <div x-show="checkoutPaymentMethod === 'yape'" class="bg-[#742d8c] text-white p-3 rounded-xl text-xs space-y-1">
@@ -1189,15 +1250,15 @@
                                 <p class="text-[9px] opacity-90" x-text="`Titular: ${yapeOwner}`"></p>
                             </div>
 
-                            <div x-show="checkoutPaymentMethod === 'cash'" class="bg-white p-3 rounded-xl border border-dj-line space-y-2 text-xs">
-                                <label class="block text-[11px] font-extrabold text-dj-charcoal">¿Con cuánto vas a pagar? *</label>
+                            <div x-show="checkoutPaymentMethod === 'cash'" class="bg-dj-card p-3 rounded-xl border border-dj-line space-y-2 text-xs">
+                                <label class="block text-[11px] font-extrabold text-dj-textMain">¿Con cuánto vas a pagar? *</label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-black text-dj-teal text-xs">S/</span>
-                                    <input type="number" step="0.10" x-model="cashAmountToPay" :placeholder="`Ej: S/ ${(getCartTotalWithDelivery() + 10).toFixed(2)}`" class="w-full text-xs py-2 pl-8 pr-3 rounded-xl border border-dj-line focus:border-dj-teal outline-none bg-dj-sand font-bold text-dj-charcoal">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-black text-dj-amber text-xs">S/</span>
+                                    <input type="number" step="0.10" x-model="cashAmountToPay" :placeholder="`Ej: S/ ${(getCartTotalWithDelivery() + 10).toFixed(2)}`" class="w-full text-xs py-2 pl-8 pr-3 rounded-xl border border-dj-line focus:border-dj-amber outline-none bg-dj-bg font-bold text-dj-textMain">
                                 </div>
-                                <div class="p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-xs" x-show="Number(cashAmountToPay) > 0">
+                                <div class="p-2 bg-emerald-950/40 rounded-lg border border-emerald-800/40 text-xs" x-show="Number(cashAmountToPay) > 0">
                                     <template x-if="Number(cashAmountToPay) >= getCartTotalWithDelivery()">
-                                        <p class="text-emerald-800 font-semibold flex justify-between items-center">
+                                        <p class="text-emerald-300 font-semibold flex justify-between items-center">
                                             <span>💵 Tu vuelto será de:</span>
                                             <span class="font-black text-sm" x-text="`S/ ${(Number(cashAmountToPay) - getCartTotalWithDelivery()).toFixed(2)}`"></span>
                                         </p>
@@ -1209,21 +1270,27 @@
                 </div>
 
                 <!-- Footer Checkout con Total y Envío WhatsApp -->
-                <div x-show="cart.length > 0" class="p-4 border-t border-dj-line bg-white space-y-3 flex-shrink-0">
-                    <div class="flex justify-between text-sm font-black text-dj-teal">
-                        <span>Total:</span>
+                <div x-show="cart.length > 0" class="p-4 border-t border-dj-line bg-dj-bg space-y-3 flex-shrink-0">
+                    <div class="flex justify-between text-sm font-black text-dj-amber">
+                        <span>Total General:</span>
                         <span x-text="`S/ ${getCartTotalWithDelivery().toFixed(2)}`"></span>
                     </div>
 
                     <div x-show="currentStep === 'cart'">
-                        <button @click="goToCheckout()" class="w-full py-3 bg-dj-teal hover:bg-dj-tealDark text-white font-extrabold rounded-xl shadow-md transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
-                            <span>Proceder al pago</span>
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        <button @click="goToCheckout()"
+                                :disabled="!isCurrentSedeOpen()"
+                                :class="!isCurrentSedeOpen() ? 'bg-gray-800 text-gray-500 cursor-not-allowed shadow-none border border-gray-700' : 'bg-dj-amber hover:bg-dj-amberDark text-black font-extrabold shadow-md'"
+                                class="w-full py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
+                            <span x-text="isCurrentSedeOpen() ? 'Proceder al Pago' : 'Sede Cerrada por Horario'"></span>
+                            <i x-show="isCurrentSedeOpen()" class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </div>
 
                     <div x-show="currentStep === 'checkout'">
-                        <button @click="sendToWhatsApp()" class="w-full py-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-extrabold rounded-xl shadow-md transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
+                        <button @click="sendToWhatsApp()"
+                                :disabled="!isCurrentSedeOpen() || (checkoutDeliveryType === 'delivery' && isOutOfRange)"
+                                :class="(!isCurrentSedeOpen() || (checkoutDeliveryType === 'delivery' && isOutOfRange)) ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-[#25D366] hover:bg-[#128C7E] text-white font-extrabold shadow-md'"
+                                class="w-full py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
                             <i class="fa-brands fa-whatsapp text-base"></i>
                             <span>Enviar Pedido por WhatsApp</span>
                         </button>
@@ -1233,30 +1300,30 @@
         </div>
     </div>
 
-    <!-- FOOTER ELEGANTE -->
+    <!-- FOOTER -->
     <footer class="max-w-6xl mx-auto px-4 mt-12 pt-8 border-t border-dj-line text-center space-y-6">
-        <div class="flex justify-center items-center gap-4 text-xs font-bold text-dj-teal">
+        <div class="flex justify-center items-center gap-4 text-xs font-bold text-dj-amber">
             <a href="https://instagram.com/djavy.pe" target="_blank" class="hover:underline flex items-center gap-1"><i class="fa-brands fa-instagram"></i> @djavy.pe</a>
             <span>•</span>
-            <a href="https://www.facebook.com/CevicheriaAnticucheriaDjavy/?locale=es_LA" target="_blank" class="hover:underline flex items-center gap-1"><i class="fa-brands fa-facebook"></i> CevicheriaAnticucheria</a>
+            <a href="https://facebook.com/CevicheriaAnticucheria" target="_blank" class="hover:underline flex items-center gap-1"><i class="fa-brands fa-facebook"></i> CevicheriaAnticucheria</a>
             <span>•</span>
             <a href="https://tiktok.com/@djavy.piura" target="_blank" class="hover:underline flex items-center gap-1"><i class="fa-brands fa-tiktok"></i> @djavy.piura</a>
         </div>
-        <p class="text-[10px] text-dj-charcoal/60 font-semibold">© D´JAVY — Cevichería & Anticuchería Piura. Todos los derechos reservados.</p>
+        <p class="text-[10px] text-dj-textMuted font-semibold">© D´JAVY — Cevichería & Parrillas Piura. Todos los derechos reservados.</p>
     </footer>
 
     <!-- Notificación Flotante -->
-    <div x-show="floatingNotification" class="fixed bottom-4 left-4 right-4 md:left-auto md:w-80 bg-dj-charcoal text-white p-3.5 rounded-xl shadow-2xl z-50 flex items-center justify-between border border-dj-gold/30" style="display: none;">
+    <div x-show="floatingNotification" class="fixed bottom-4 left-4 right-4 md:left-auto md:w-80 bg-dj-card text-white p-3.5 rounded-xl shadow-2xl z-50 flex items-center justify-between border border-dj-amber/40" style="display: none;">
         <span class="text-xs font-bold" x-text="floatingNotification"></span>
-        <button @click="floatingNotification = ''" class="text-dj-gold font-black text-xs px-2">OK</button>
+        <button @click="floatingNotification = ''" class="text-dj-amber font-black text-xs px-2">OK</button>
     </div>
 
     <!-- Botón Flotante Ver Pedido -->
     <button @click="isCartOpen = true" x-show="!isCartOpen"
-            class="fixed bottom-4 right-4 z-40 bg-dj-teal hover:bg-dj-tealDark text-white font-bold py-2.5 px-4 rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2 border border-dj-gold text-xs sm:text-sm">
+            class="fixed bottom-4 right-4 z-40 bg-dj-amber hover:bg-dj-amberDark text-black font-extrabold py-2.5 px-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2 border border-white text-xs sm:text-sm">
         <span class="relative">
-            <i class="fa-solid fa-bowl-food text-sm sm:text-base text-dj-gold"></i>
-            <span x-show="getCartItemsCount() > 0" class="absolute -top-2.5 -right-2.5 bg-dj-gold text-dj-tealDark font-black text-[8px] h-4 w-4 rounded-full flex items-center justify-center border border-white animate-pulse" x-text="getCartItemsCount()"></span>
+            <i class="fa-solid fa-fire-burner text-sm sm:text-base text-black"></i>
+            <span x-show="getCartItemsCount() > 0" class="absolute -top-2.5 -right-2.5 bg-black text-dj-amber font-black text-[8px] h-4 w-4 rounded-full flex items-center justify-center border border-dj-amber animate-pulse" x-text="getCartItemsCount()"></span>
         </span>
         <span class="tracking-wide uppercase text-[10px] sm:text-xs">Ver Pedido</span>
     </button>
