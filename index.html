@@ -20,28 +20,25 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-  tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                dj: {
-                    bg: '#121010',         // 👈 1. Fondo principal de toda la página
-                    card: '#1C1917',       // 👈 2. Fondo de las tarjetas de platos y modales
-                    cardHover: '#262322',  // 👈 3. Color de la tarjeta al pasar el cursor
-                    amber: '#F59E0B',      // 👈 4. Color principal de acento (Botones, precios, resaltados)
-                    amberDark: '#D97706',  // 👈 5. Color del botón al hacer clic
-                    line: '#2E2A28',       // 👈 6. Color de las líneas divisoras y bordes
-                    textMain: '#F3F4F6',   // 👈 7. Color de los títulos y textos principales
-                    textMuted: '#A1A1AA'   // 👈 8. Color de las descripciones y textos secundarios
-                }
-            }
-        }
-    }
-}
+ <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dj: {
+                            bg: '#121010',         // Fondo principal oscuro
+                            card: '#1C1917',       // Tarjeta ahumada
+                            cardHover: '#262322',
+                            amber: '#F59E0B',      // Ámbar / Fuego
+                            amberDark: '#D97706',
+                            line: '#2E2A28',       // Bordes oscuros
+                            textMain: '#F3F4F6',   // Texto principal claro
+                            textMuted: '#A1A1AA'   // Texto secundario
+                        }
+                    },
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        display: ['"Fraunces"', 'serif'],
+                        display: ['"Fraunces"', 'serif']
                     }
                 }
             }
